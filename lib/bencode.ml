@@ -8,16 +8,16 @@ type t =
   | Dict of t String.Map.t
 
 let rec to_string_hum = function
-  | String s -> Printf.sprintf "(String \"%s\")" (String.escaped s)
-  | Int i -> Printf.sprintf "(Int %d)" i
-  | List l -> "(List " ^ (l |> List.map ~f:to_string_hum |> String.concat ~sep:" ") ^ ")"
+  | String s -> Printf.sprintf "\"%s\"" (String.escaped s)
+  | Int i -> Printf.sprintf "%d" i
+  | List l -> "[" ^ (l |> List.map ~f:to_string_hum |> String.concat ~sep:"; ") ^ "]"
   | Dict d ->
-    "(Dict "
+    "{"
     ^ (d
       |> Map.to_alist ~key_order:`Increasing
-      |> List.map ~f:(fun (k, v) -> Printf.sprintf "(\"%s\": %s)" k (to_string_hum v))
-      |> String.concat ~sep:" ")
-    ^ ")"
+      |> List.map ~f:(fun (k, v) -> Printf.sprintf "\"%s\": %s" k (to_string_hum v))
+      |> String.concat ~sep:"; ")
+    ^ "}"
 ;;
 
 let take_safe l n =
@@ -108,14 +108,14 @@ let%expect_test _ =
   tests |> List.iter ~f:bdecode_and_print;
   [%expect
     {|
-    (Int 3)
-    (Int -3)
-    (Int 10001)
-    (Int 0)
-    (String spam)
-    (List (String spam) (String eggs))
-    (Dict (cow: (String moo)) (spam: (String eggs)))
-    (Dict (spam: (List (String a) (String b))))
+    3
+    -3
+    10001
+    0
+    "spam"
+    ["spam"; "eggs"]
+    {"cow": "moo"; "spam": "eggs"}
+    {"spam": ["a"; "b"]}
   |}]
 ;;
 

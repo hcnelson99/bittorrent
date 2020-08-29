@@ -27,7 +27,7 @@ let take_safe l n =
     | _, [] -> None
     | _, x :: l -> go l (n - 1) (x :: acc)
   in
-  if n < 0 then failwith "take got negative number" else go l n []
+  if n < 0 then None else go l n []
 ;;
 
 let take_until cs t =

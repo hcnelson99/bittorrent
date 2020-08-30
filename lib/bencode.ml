@@ -37,7 +37,10 @@ let take_until cs t =
   | t' :: rest -> if Char.equal t t' then Some (b, rest) else None
 ;;
 
-(* TODO: Int.of_strings can raise *)
+let int_of_char_list chars =
+  try Some (String.of_char_list chars |> Int.of_string) with
+  | Failure _ -> None
+;;
 
 let of_string s =
   let open Option.Let_syntax in
@@ -59,7 +62,8 @@ let of_string s =
       return (List elts, rest)
     | 'i' :: rest ->
       let%bind i, rest = take_until rest 'e' in
-      Some (Int (Int.of_string (String.of_char_list i)), rest)
+      let%map result = int_of_char_list i in
+      Int result, rest
     | 'd' :: rest ->
       let%bind elts, rest = go_list rest in
       let%bind alist =
@@ -79,8 +83,8 @@ let of_string s =
     | c :: rest ->
       if Char.is_digit c
       then (
-        let%bind len, rest = take_until (c :: rest) ':' in
-        let len = Int.of_string (String.of_char_list len) in
+        let%bind len_chars, rest = take_until (c :: rest) ':' in
+        let%bind len = int_of_char_list len_chars in
         let%bind s, rest = take_safe rest len in
         Some (String (String.of_char_list s), rest))
       else None
@@ -120,9 +124,12 @@ let%expect_test _ =
 ;;
 
 let%expect_test _ =
-  let failing_tests = [ "5:spam"; "3:spam"; "d3:cow3:moo4:spame"; "di3e4:spame" ] in
+  let failing_tests =
+    [ "5:spam"; "3:spam"; "d3:cow3:moo4:spame"; "di3e4:spame"; "ite" ]
+  in
   failing_tests |> List.iter ~f:bdecode_and_print;
   [%expect {|
+    Error
     Error
     Error
     Error

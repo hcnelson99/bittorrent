@@ -3,4 +3,4 @@
  (libraries core)
  (inline_tests)
  (preprocess
-  (pps ppx_jane ppx_expect)))
+  (pps ppx_jane ppx_expect ppx_sexp_conv)))

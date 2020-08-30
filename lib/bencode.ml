@@ -6,6 +6,7 @@ type t =
   | List of t list
   (* Keys must be strings and appear in sorted order *)
   | Dict of t String.Map.t
+[@@deriving sexp_of]
 
 let rec to_string_hum = function
   | String s -> Printf.sprintf "\"%s\"" (String.escaped s)
@@ -135,4 +136,25 @@ let%expect_test _ =
     Error
     Error
   |}]
+;;
+
+(* functions to help deconstruct a value *)
+let extract_string = function
+  | String s -> Some s
+  | _ -> None
+;;
+
+let extract_int = function
+  | Int i -> Some i
+  | _ -> None
+;;
+
+let extract_list = function
+  | List l -> Some l
+  | _ -> None
+;;
+
+let extract_value key = function
+  | Dict d -> Map.find d key
+  | _ -> None
 ;;
